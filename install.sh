@@ -52,8 +52,11 @@ fi
 # gitconfig — only settings not managed by home-manager
 # (git, delta, diff, merge, init, commit, rebase are all in base.nix)
 gitconfig="/root/.gitconfig.${ANT_USERNAME}"
-if ! grep -q '\[github\]' "$gitconfig" 2>/dev/null; then
+if ! grep -q 'path = /root/src/home/.config/git/config' "$gitconfig" 2>/dev/null; then
   cat <<-'EOF' >>"$gitconfig"
+	[include]
+	    path = /root/src/home/.config/git/config
+
 	[credential "https://gist.github.com"]
 	    helper = "gh auth git-credential"
 

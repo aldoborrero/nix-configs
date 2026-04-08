@@ -184,11 +184,19 @@ in
         fi
         unset __HM_SESS_VARS_SOURCED
       '';
-      initContent = ''
-        if command -v nix-your-shell > /dev/null; then
-          eval "$(nix-your-shell zsh)"
-        fi
-      '';
+      initContent = lib.mkMerge [
+        ''
+          if command -v nix-your-shell > /dev/null; then
+            eval "$(nix-your-shell zsh)"
+          fi
+        ''
+        (lib.mkAfter ''
+          if [[ -f /root/code/config/remote/zshrc ]]; then
+            export ANT_PRISTINE_SHELL=1
+            source /root/code/config/remote/zshrc
+          fi
+        '')
+      ];
     };
 
     ###########################################################################
@@ -201,7 +209,7 @@ in
       settings = {
         user = {
           name = "Aldo Borrero";
-          signingKey = "/root/.ssh/git.pub";
+          signingKey = "/root/.ssh/git-commit-signing/coder";
         };
         core.editor = "avim";
         commit.gpgsign = true;
