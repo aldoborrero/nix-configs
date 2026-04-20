@@ -18,7 +18,6 @@ in
 
   # Write nix.conf declaratively via HM instead of install.sh
   xdg.configFile."nix/nix.conf".text = ''
-    !include /root/code/config/remote/nix-shared.conf
     extra-experimental-features = nix-command fetch-tree flakes
     max-jobs = 36
     download-buffer-size = 268435456
@@ -29,6 +28,11 @@ in
     connect-timeout = 1
     stalled-download-timeout = 10
     auto-optimise-store = true
+    narinfo-cache-negative-ttl = 0
+    sandbox-fallback = false
+    use-xdg-base-directories = true
+    warn-dirty = false
+    trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nxb-prod-cache-1:nyuAGqwcA+iGpScMaAPH8HkIzX/FPsqODG5ouAVHgdY=
   '';
 
   ###########################################################################
@@ -70,12 +74,6 @@ in
     };
 
     shellAliases = {
-      g = "git";
-      ga = "git add";
-      gaa = "git add --all";
-      gco = "git checkout";
-      gf = "git fetch";
-      gst = "git status";
       gpf = "git push -f";
       k = "kubectl";
       lg = "lazygit";
@@ -167,7 +165,7 @@ in
       enable = true;
       autocd = true;
       autosuggestion.enable = true;
-      enableCompletion = true;
+      enableCompletion = false;
       syntaxHighlighting.enable = true;
       history = {
         extended = true;
