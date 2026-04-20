@@ -186,6 +186,18 @@ in
       '';
       initContent = lib.mkMerge [
         ''
+          bindkey -e
+
+          # Home / End / Delete
+          bindkey '\e[H'  beginning-of-line
+          bindkey '\e[1~' beginning-of-line
+          bindkey '\eOH'  beginning-of-line
+          bindkey '\e[F'  end-of-line
+          bindkey '\e[4~' end-of-line
+          bindkey '\eOF'  end-of-line
+          bindkey '\e[3~' delete-char
+          bindkey '^[[3~' delete-char
+
           if command -v nix-your-shell > /dev/null; then
             eval "$(nix-your-shell zsh)"
           fi
