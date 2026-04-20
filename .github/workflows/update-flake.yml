@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Update flake inputs
+
+on:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-flake
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v20
+        with:
+          extra-conf: |
+            accept-flake-config = true
+            experimental-features = nix-command flakes fetch-tree
+
+      - name: Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v13
+
+      - name: Update flake inputs
+        id: update
+        run: |
+          set -euo pipefail
+          nix flake update 2>&1 | tee update.log
+          {
+            echo 'body<<EOF'
+            echo '## Flake input updates'
+            echo
+            echo '```'
+            cat update.log
+            echo '```'
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GH_PAT }}
+          commit-message: "chore: update flake inputs"
+          title: "chore: update flake inputs"
+          body: ${{ steps.update.outputs.body }}
+          branch: ci/update-flake
+          delete-branch: true
+          sign-commits: true
+          labels: |
+            dependencies
+            automated

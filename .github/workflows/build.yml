@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Build home-manager
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      diff: ${{ steps.diff.outputs.body }}
+      has-diff: ${{ steps.diff.outputs.has-diff }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v20
+        with:
+          extra-conf: |
+            accept-flake-config = true
+            experimental-features = nix-command flakes fetch-tree
+
+      - name: Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v13
+
+      - name: Build previous activation package
+        id: prev
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          git worktree add /tmp/prev "${{ github.event.pull_request.base.sha }}"
+          prev_path=$(nix build --no-link --print-out-paths \
+            "/tmp/prev#homeConfigurations.antics.activationPackage")
+          echo "path=$prev_path" >> "$GITHUB_OUTPUT"
+
+      - name: Build current activation package
+        id: current
+        run: |
+          set -euo pipefail
+          current_path=$(nix build --no-link --print-out-paths \
+            ".#homeConfigurations.antics.activationPackage")
+          echo "path=$current_path" >> "$GITHUB_OUTPUT"
+          echo "Built: $current_path"
+
+      - name: Diff closures
+        id: diff
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          nix profile diff-closures \
+            --profile "${{ steps.prev.outputs.path }}" \
+            --profile "${{ steps.current.outputs.path }}" \
+            > closure-diff.txt 2>&1 || true
+
+          nix store diff-closures \
+            "${{ steps.prev.outputs.path }}" \
+            "${{ steps.current.outputs.path }}" \
+            > store-diff.txt 2>&1 || true
+
+          if [[ -s store-diff.txt ]]; then
+            echo "has-diff=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-diff=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          {
+            echo 'body<<DIFF_EOF'
+            echo '## Closure diff'
+            echo
+            echo '<details><summary>Updated store paths</summary>'
+            echo
+            echo '```'
+            cat store-diff.txt
+            echo '```'
+            echo
+            echo '</details>'
+          } >> "$GITHUB_OUTPUT"
+          echo 'DIFF_EOF' >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && steps.diff.outputs.has-diff == 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: closure-diff
+          message: ${{ steps.diff.outputs.body }}
