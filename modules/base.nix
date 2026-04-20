@@ -233,6 +233,7 @@ in
           followTags = true;
         };
         rebase.autoStash = true;
+        url."git@github.com:".insteadOf = "https://github.com/";
       };
       signing.format = "ssh";
     };
