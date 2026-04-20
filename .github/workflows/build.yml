@@ -42,9 +42,11 @@ jobs:
       - name: Build previous activation package
         id: prev
         if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
-          git worktree add /tmp/prev "${{ github.event.pull_request.base.sha }}"
+          git worktree add /tmp/prev "$BASE_SHA"
           prev_path=$(nix build --no-link --print-out-paths \
             "/tmp/prev#homeConfigurations.antics.activationPackage")
           echo "path=$prev_path" >> "$GITHUB_OUTPUT"
@@ -63,11 +65,6 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
-          nix profile diff-closures \
-            --profile "${{ steps.prev.outputs.path }}" \
-            --profile "${{ steps.current.outputs.path }}" \
-            > closure-diff.txt 2>&1 || true
-
           nix store diff-closures \
             "${{ steps.prev.outputs.path }}" \
             "${{ steps.current.outputs.path }}" \

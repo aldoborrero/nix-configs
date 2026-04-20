@@ -16,6 +16,9 @@ in
   # Disable HM nix management — container has its own nix wrapper
   nix.enable = false;
 
+  # Export XDG_* so tools read configs from our persistent xdg.configHome
+  xdg.enable = true;
+
   # Write nix.conf declaratively via HM instead of install.sh
   xdg.configFile."nix/nix.conf".text = ''
     extra-experimental-features = nix-command fetch-tree flakes
