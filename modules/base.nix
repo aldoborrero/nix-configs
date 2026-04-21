@@ -116,7 +116,7 @@ in
       if [ -d "$AGENT_KIT/.git" ]; then
         ${pkgs.git}/bin/git -C "$AGENT_KIT" pull --ff-only 2>/dev/null || true
       else
-        ${pkgs.git}/bin/git clone https://github.com/aldoborrero/agent-kit.git "$AGENT_KIT" 2>/dev/null || true
+        ${pkgs.git}/bin/git clone git@github.com:aldoborrero/agent-kit.git "$AGENT_KIT" 2>/dev/null || true
       fi
 
       if [ -d "$AGENT_KIT/extensions" ]; then
