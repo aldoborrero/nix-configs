@@ -8,7 +8,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     astronvim = {
-      url = "github:aldoborrero/astronvim.nix";
+      url = "github:aldoborrero/avim.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents = {

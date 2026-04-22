@@ -11,16 +11,16 @@
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1773098249,
-        "narHash": "sha256-f/NvakHXVJpHwCVsP6yOICdY8a/x4EzMcp2RHHNx+VU=",
+        "lastModified": 1776846837,
+        "narHash": "sha256-WGnaDlTXq1eawyWFSkHh3zUt00XWbp5dxroU8m4Q9c0=",
         "owner": "aldoborrero",
-        "repo": "astronvim.nix",
-        "rev": "1705f55e0724726423bddd0ff2dee4f996b186bf",
+        "repo": "avim.nix",
+        "rev": "ce36ba2ad3601f40e72ef91a8e08993ec54bf41d",
         "type": "github"
       },
       "original": {
         "owner": "aldoborrero",
-        "repo": "astronvim.nix",
+        "repo": "avim.nix",
         "type": "github"
       }
     },

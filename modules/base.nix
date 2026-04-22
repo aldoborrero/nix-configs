@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   astronvim,
@@ -170,6 +171,7 @@ in
       autosuggestion.enable = true;
       enableCompletion = false;
       syntaxHighlighting.enable = true;
+      dotDir = "${config.xdg.configHome}/zsh";
       history = {
         extended = true;
         ignoreDups = true;
